@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:redis="http://www.mulesoft.org/schema/mule/redis" xmlns:google-drive="http://www.mulesoft.org/schema/mule/google-drive"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/google-drive http://www.mulesoft.org/schema/mule/google-drive/current/mule-google-drive.xsd
+http://www.mulesoft.org/schema/mule/redis http://www.mulesoft.org/schema/mule/redis/current/mule-redis.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2e7d7d37-41be-460a-97db-a093b1a4f50c" >
+		<salesforce:basic-connection username="simran.modi@prowesssoft.com" password="Ankush@2" securityToken="3x5fNrWxBartwEe1LEK6ZuQM" url="https://login.salesforce.com/services/Soap/u/61.0" />
+	</salesforce:sfdc-config>
+	<redis:redis-config name="Redis_Redis" doc:name="Redis Redis" doc:id="67e762e3-5287-498f-b6c0-b5ef944accf5" >
+		<redis:nonclustered-connection />
+	</redis:redis-config>
+	<flow name="google-pub-subFlow" doc:id="0be8bce9-8f60-438d-9f64-0b6519cd1084" >
+		<salesforce:modified-object-listener doc:name="On Modified Object" doc:id="b2b793b9-832f-4dc9-9f58-60b2e4841bdb" config-ref="Salesforce_Config" objectType="Case">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<logger level="INFO" doc:name="Logger" doc:id="1e018268-4f53-4a02-98d5-12b40539e0e5" message="#[payload]"/>
+		<redis:set doc:name="Set" doc:id="ef5d7c37-f8e6-4759-9734-4d149b620f93" config-ref="Redis_Redis" key="name">
+			<redis:value ><![CDATA[#[payload.OwnerId]]]></redis:value>
+		</redis:set>
+		<redis:get doc:name="Get" doc:id="126dcaba-eac6-49a6-87cf-e9e8f81ce446" config-ref="Redis_Redis" key="name" target="OwnerId-name"/>
+		<logger level="INFO" doc:name="Logger" doc:id="5699fe7a-d921-41ba-82dc-72ec6d926fbe" message="#[vars.'OwnerId-name']"/>
+	</flow>
+</mule>
